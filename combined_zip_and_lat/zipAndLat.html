@@ -36,6 +36,7 @@
 var map;
 var infoWindow;
 var service;
+var setPlaceId;
 
 //storage for latitude and longitude when seareching by zipcode
  var lats=0;
@@ -45,7 +46,7 @@ var service;
 var lat=0;
 var long=0;
 function currentlocation(lat, long) {
-        var queryURL = "https://crossorigin.me/https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=museums&location="+lat+","+long+"&radius=50000&key=AIzaSyDJ615EckIzXnWopY5TT5Cf5na_0ZGUgWc";
+        queryURL = "https://crossorigin.me/https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+lat + long+"&radius=500&type=restaurant&keyword=cruise&opennow&key=AIzaSyDWAIaiBXBdy-XApeUPZiCX3c7Xd-t3COk"
       return queryURL;
 }
 
@@ -85,19 +86,16 @@ getLocation()
 
 
 
-
-
-
-
 //searches zipcode input
  function queryUrlConstructor (zipcode) {
   var queryURL="https://crossorigin.me/https://maps.googleapis.com/maps/api/geocode/json?&address="+ zipcode +"&key=AIzaSyAZsRAVEPtigI7SzB_QnCuY92bdh0OpefY";
   return queryURL;
  }
+
   //queryURL with ajax call to pull latitude and longitude out of JSON
   //deleted crossoriginme to have the query URL work
   //queryUrlConstructor is currently ready to recieve zipcode input from form. The below line may be commented out, but need to replace 'querylURL' with 'queryUrlConstructor' syntax below
-  var queryURL = "https://maps.googleapis.com/maps/api/geocode/json?&address=08854&key=AIzaSyAZsRAVEPtigI7SzB_QnCuY92bdh0OpefY";
+  var queryURL = "https://maps.googleapis.com/maps/api/geocode/json?&address=08854&key=AIzaSyB57N6LfRt0KPZjKV9f0U-rxCaNF4KLL-k";
       
   $.ajax({url: queryURL, method: 'GET'}).done(function(response) {
    var results = response.data;
@@ -134,10 +132,14 @@ getLocation()
         });
         infoWindow = new google.maps.InfoWindow();
         service = new google.maps.places.PlacesService(map);
+        
         // The idle event is a debounced event, so we can query & listen without
         // throwing too many requests at the server.
         map.addListener('idle', performSearch);
+    
     }
+
+
      
       //search inputs of venue 
      function performSearch() {
@@ -147,10 +149,13 @@ getLocation()
          // query:'hiking_trail' //text search
           placeId:'ChIJN1t_tDeuEmsRUsoyG83frY4'
       };
+      //searches places and returns 200places
+
         service.radarSearch(request, callback);
         // service.textSearch(request, callback);
         // console.log(serice.radarSearch(request, callback))
-        // service.getDetails(request, callback);
+        service.getDetails(request, callback);
+
       }
       function callback(results, status) {
         if (status !== google.maps.places.PlacesServiceStatus.OK) {
@@ -161,15 +166,40 @@ getLocation()
           //adds marker to results of venues
           addMarker(result);
           createPhotoMarker(result);
+          // console.log(result.place_id)
+          //toggled off setplaceId search
+          // setPlaceId=result.place_id 
+          // var queryURL=queryDetail(setPlaceId)
+          // getPlaceId(queryURL)
+          
+
+
           // shows array of objects related to the venue, able to pull anything
           // console.log(result.rating) //this does not work
-          console.log(result) //does not console log the venues anymore,broken Trying to fix this
+          // console.log(result) //does not console log the venues anymore,broken Trying to fix this
 
         }
   //       else (status == google.maps.places.PlacesServiceStatus.OK) {
   //         createMarker(place);
   // }
       }
+
+
+//      //construct placeid detail search, json 
+//     function queryDetail (setplaceId) {
+//      var queryURL "https://maps.googleapis.com/maps/api/place/details/json?placeid="+ setplaceId +"&key=AIzaSyDJ615EckIzXnWopY5TT5Cf5na_0ZGUgWc";
+//      return queryURL
+//    }
+
+//    //ajax for placeId detail
+//    function getPlaceId (queryDetail) {
+//     $.ajax({url: queryURL, method: 'GET'}).done(function(response) {
+//     var results = response.data;
+//     // console.log(queryURL);
+//     console.log(response);
+//   });
+// } 
+
      //creates photo of venue, this is broken as well
       function createPhotoMarker(place) {
         var photos = place.photos;
@@ -204,6 +234,7 @@ getLocation()
               console.error(status);
               return;
             }
+
             infoWindow.setContent(result.name);
             infoWindow.open(map, marker);
             // infoWindow.setContent(result.rating) //rating of venue, this does not work
